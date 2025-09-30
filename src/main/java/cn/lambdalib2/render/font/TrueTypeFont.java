@@ -84,27 +84,6 @@ public class TrueTypeFont implements IFont {
         return withFallback(Font.PLAIN, 32, fontsToTry);
     }
 
-    public static TrueTypeFont withFallback(int style, int size, String... fallbackNames) {
-        Font[] allFonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
-        List<Font> used = new ArrayList<>();
-
-        for (String fontName : fallbackNames) {
-            for (Font font : allFonts) {
-                if (font.getName().equalsIgnoreCase(fontName)) {
-                    used.add(font);
-                    break;
-                }
-            }
-        }
-
-        if (used.isEmpty()) {
-            return new TrueTypeFont(new Font("Default", style, size));
-        } else {
-            Font validFont = used.get(0);
-            return new TrueTypeFont(new Font(validFont.getName(), style, size));
-        }
-    }
-
     private static final Color BACKGRND_COLOR = new Color(255, 255, 255, 0);
     private final int TEXTURE_SZ_LIMIT = Math.min(2048, GL11.glGetInteger(GL_MAX_TEXTURE_SIZE));
 
@@ -350,4 +329,76 @@ public class TrueTypeFont implements IFont {
 
         graphics.dispose();
     }
+
+    /**
+     * Creates a TrueTypeFont with locale-aware fallback.
+     * Tests each font to ensure it can render characters from the current locale.
+     */
+    public static TrueTypeFont withLocaleFallback(int style, int size, String locale, String... fallbackNames) {
+        Font[] allFonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
+        List<Font> availableFonts = new ArrayList<>();
+
+        // Get test character based on locale
+        String testChar = getTestCharForLocale(locale);
+
+        for (String fontName : fallbackNames) {
+            for (Font systemFont : allFonts) {
+                if (systemFont.getName().equalsIgnoreCase(fontName) ||
+                        systemFont.getFontName().equalsIgnoreCase(fontName)) {
+
+                    Font testFont = new Font(systemFont.getName(), style, size);
+
+                    // Check if this font can actually display the locale's characters
+                    if (testChar == null || testFont.canDisplayUpTo(testChar) == -1) {
+                        availableFonts.add(testFont);
+                        break; // Found a matching font, move to next font name
+                    }
+                }
+            }
+        }
+
+        if (availableFonts.isEmpty()) {
+            // Ultimate fallback: use system default
+            return new TrueTypeFont(new Font("Dialog", style, size));
+        } else {
+            // Use the first font that passed the test
+            return new TrueTypeFont(availableFonts.get(0));
+        }
+    }
+
+    /**
+     * Get a representative test string for a locale to check font compatibility
+     */
+    private static String getTestCharForLocale(String locale) {
+        if (locale == null) {
+            return null;
+        }
+
+        if (locale.startsWith("ko")) {
+            return "한글"; // Korean
+        } else if (locale.startsWith("ja")) {
+            return "日本語"; // Japanese
+        } else if (locale.startsWith("zh")) {
+            return "中文"; // Chinese
+        } else if (locale.startsWith("ru")) {
+            return "Русский"; // Russian
+        } else if (locale.startsWith("th")) {
+            return "ไทย"; // Thai
+        } else if (locale.startsWith("ar")) {
+            return "العربية"; // Arabic
+        } else if (locale.startsWith("he")) {
+            return "עברית"; // Hebrew
+        }
+
+        return null; // Latin scripts - most fonts support these
+    }
+
+    /**
+     * Original withFallback for backward compatibility
+     */
+    public static TrueTypeFont withFallback(int style, int size, String... fallbackNames) {
+        String locale = Minecraft.getMinecraft().gameSettings.language;
+        return withLocaleFallback(style, size, locale, fallbackNames);
+    }
+
 }

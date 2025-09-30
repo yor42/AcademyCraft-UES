@@ -30,8 +30,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.IntBuffer;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.GL_BGRA;
@@ -159,14 +159,39 @@ public class ClientResources {
             String userSpecified = config.getString("font", "gui", "Microsoft YaHei",
                     "The font to be used. If not found in the system, default fonts will be used.");
 
-            font = TrueTypeFont.withFallback(
-                Font.PLAIN, 24, userSpecified,
-                    "맑은 고딕",
-                    "微软雅黑",
-                    "Microsoft YaHei",
-                    "SimHei",
+            // Get current Minecraft locale
+            String locale = Minecraft.getMinecraft().gameSettings.language;
+
+            // Build priority list: user specified -> locale-specific -> general fallbacks
+            List<String> fontPriority = new ArrayList<>();
+            fontPriority.add(userSpecified);
+
+            // Add locale-specific fonts
+            if (locale.startsWith("ko")) {
+                // Korean fonts
+                fontPriority.addAll(Arrays.asList("맑은 고딕", "Malgun Gothic", "Gulim", "Dotum", "Batang"));
+            } else if (locale.startsWith("ja")) {
+                // Japanese fonts
+                fontPriority.addAll(Arrays.asList("Yu Gothic", "Meiryo", "MS Gothic", "MS Mincho"));
+            } else if (locale.startsWith("zh")) {
+                // Chinese fonts
+                fontPriority.addAll(Arrays.asList("Microsoft YaHei", "微软雅黑", "SimHei", "宋体", "SimSun"));
+            }
+
+            // Add general CJK-capable fallbacks
+            fontPriority.addAll(Arrays.asList(
+                    "Arial Unicode MS",
+                    "Noto Sans CJK",
+                    "Source Han Sans",
                     "Adobe Heiti Std R"
+            ));
+
+            font = TrueTypeFont.withLocaleFallback(
+                    Font.PLAIN, 24,
+                    locale,
+                    fontPriority.toArray(new String[0])
             );
+
             fontBold = new TrueTypeFont(font.font.deriveFont(Font.BOLD));
             fontItalic = new TrueTypeFont(font.font.deriveFont(Font.ITALIC));
         }

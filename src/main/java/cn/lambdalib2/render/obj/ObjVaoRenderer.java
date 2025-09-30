@@ -85,8 +85,14 @@ public class ObjVaoRenderer {
      * Renders all parts of the model. Must be called between begin() and end().
      */
     public void renderAll() {
+        if (!initialized) {
+            initialize();
+        }
         if (vaoID == -1 || model.vertices.isEmpty()) return;
+
+        glBindVertexArray(vaoID);
         glDrawArrays(GL_TRIANGLES, 0, model.vertices.size());
+        glBindVertexArray(0);
     }
 
     /**
