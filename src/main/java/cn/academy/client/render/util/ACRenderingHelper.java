@@ -6,6 +6,9 @@ import cn.lambdalib2.util.HudUtils;
 import cn.lambdalib2.util.MathUtils;
 import cn.lambdalib2.util.RenderUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
@@ -33,16 +36,15 @@ public class ACRenderingHelper {
     public static void drawGlow(double x, double y, double width, double height, double size, Color glowColor) {
         Colors.bindToGL(glowColor);
 
-        final double s = size;
         GL11.glDisable(GL11.GL_ALPHA_TEST);
-        gdraw(GLOW_L,  x - s,       y,           s,      height);
-        gdraw(GLOW_R,  x + width, y,           s,      height);
-        gdraw(GLOW_U,  x,             y - s,       width, s);
-        gdraw(GLOW_D,  x,             y + height, width, s);
-        gdraw(GLOW_RU, x + width, y - s,       s,      s);
-        gdraw(GLOW_RD, x + width, y + height, s,      s);
-        gdraw(GLOW_LU, x - s,       y - s,       s,      s);
-        gdraw(GLOW_LD, x - s,       y + height, s,      s);
+        gdraw(GLOW_L,  x - size,       y, size,      height);
+        gdraw(GLOW_R,  x + width, y, size,      height);
+        gdraw(GLOW_U,  x,             y - size,       width, size);
+        gdraw(GLOW_D,  x,             y + height, width, size);
+        gdraw(GLOW_RU, x + width, y - size, size, size);
+        gdraw(GLOW_RD, x + width, y + height, size, size);
+        gdraw(GLOW_LU, x - size,       y - size, size, size);
+        gdraw(GLOW_LD, x - size,       y + height, size, size);
     }
     
     public static boolean isThePlayer(EntityPlayer p) {
@@ -66,12 +68,14 @@ public class ACRenderingHelper {
         
         GL11.glPushMatrix();
         RenderUtils.loadTexture(texture);
+        Tessellator t = Tessellator.getInstance();
+        BufferBuilder buffer = t.getBuffer();
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
         for(int i = 0; i < 4; ++i) {
             double angle = Math.min(90, progress - 90 * i);
             if(angle <= 0)
                 break;
             double u1, v1;
-            GL11.glBegin(GL11.GL_TRIANGLES);
             
             if(angle <= 45) {
                 u1 = Math.tan(MathUtils.toRadians(angle));
@@ -81,16 +85,16 @@ public class ACRenderingHelper {
                 v1 = 0;
                 
                 double x = Math.tan(MathUtils.toRadians(90 - angle));
-                RenderUtils.glVertexAndUV(1, -1, 0, 1, 0);
-                RenderUtils.glVertexAndUV(0, 0, 0, 0, 1);
-                RenderUtils.glVertexAndUV(1, -x, 0, 1, 1 - x);
+                RenderUtils.addVertexWithUV(buffer, 1, -1, 0, 1, 0);
+                RenderUtils.addVertexWithUV(buffer, 0, 0, 0, 0, 1);
+                RenderUtils.addVertexWithUV(buffer, 1, -x, 0, 1, 1 - x);
             }
             
-            RenderUtils.glVertexAndUV(0, -1, 0, 0, 0);
-            RenderUtils.glVertexAndUV(0, 0, 0, 0, 1);
-            RenderUtils.glVertexAndUV(u1,  -1 -v1, 0, u1, v1);
+            RenderUtils.addVertexWithUV(buffer, 0, -1, 0, 0, 0);
+            RenderUtils.addVertexWithUV(buffer, 0, 0, 0, 0, 1);
+            RenderUtils.addVertexWithUV(buffer, u1,  -1 -v1, 0, u1, v1);
 
-            GL11.glEnd();
+            t.draw();
 
             GL11.glRotated(90, 0, 0, 1);
         }
@@ -120,12 +124,14 @@ public class ACRenderingHelper {
         GL11.glPushMatrix();
         GL11.glTranslated(x0, y0, 0);
         GL11.glRotated(theta, 0, 0, 1);
-        GL11.glBegin(GL11.GL_QUADS);
-        RenderUtils.glVertexAndUV(0, -hw, 0, 0, 0);
-        RenderUtils.glVertexAndUV(0, hw, 0, 0, 1);
-        RenderUtils.glVertexAndUV(len, hw, 0, 1, 1);
-        RenderUtils.glVertexAndUV(len, -hw, 0, 1, 0);
-        GL11.glEnd();
+        Tessellator t = Tessellator.getInstance();
+        BufferBuilder buffer = t.getBuffer();
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+        RenderUtils.addVertexWithUV(buffer, 0, -hw, 0, 0, 0);
+        RenderUtils.addVertexWithUV(buffer, 0, hw, 0, 0, 1);
+        RenderUtils.addVertexWithUV(buffer, len, hw, 0, 1, 1);
+        RenderUtils.addVertexWithUV(buffer, len, -hw, 0, 1, 0);
+        t.draw();
         GL11.glPopMatrix();
     }
 

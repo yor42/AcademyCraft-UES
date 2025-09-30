@@ -17,7 +17,7 @@ import org.lwjgl.opengl.GL11;
 /**
  * @author WeAthFolD
  */
-public class RenderWindGenMain extends RenderBlockMulti {
+public class RenderWindGenMain extends RenderBlockMulti<TileWindGenMain> {
     @RegTileEntityRender(TileWindGenMain.class)
     private static final RenderWindGenMain instance = new RenderWindGenMain();
 
@@ -30,11 +30,8 @@ public class RenderWindGenMain extends RenderBlockMulti {
         texFan = Resources.getTexture("models/windgen_fan");
 
     @Override
-    public void drawAtOrigin(TileEntity te) {
-        TileWindGenMain gen = (TileWindGenMain) te;
-
+    public void drawAtOrigin(TileWindGenMain gen) {
         GlStateManager.pushMatrix();
-
         // draw body
         RenderUtils.loadTexture(texBody);
         mdlBody.justRenderAll();

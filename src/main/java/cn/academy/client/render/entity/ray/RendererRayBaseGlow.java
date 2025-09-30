@@ -2,18 +2,21 @@ package cn.academy.client.render.entity.ray;
 
 import cn.academy.entity.EntityRayBase;
 import cn.academy.entity.IRay;
-import cn.lambdalib2.render.legacy.Tessellator;
 import cn.lambdalib2.util.MathUtils;
 import cn.lambdalib2.util.RenderUtils;
 import cn.lambdalib2.util.VecUtils;
 import cn.lambdalib2.util.ViewOptimize;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
+import org.lwjgl.opengl.GL11;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -115,15 +118,15 @@ public abstract class RendererRayBaseGlow<T extends EntityRayBase &IRay> extends
             v3 = VecUtils.add(end,      VecUtils.multiply(upDir, -width)),
             v4 = VecUtils.add(end,   VecUtils.multiply(upDir, width));
         
-        Tessellator t = Tessellator.instance;
-        
+        Tessellator t = Tessellator.getInstance();
+        BufferBuilder buf = t.getBuffer();
+        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
         OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240f, 240f);
-        glBegin(GL_QUADS);
-        RenderUtils.addVertexLegacy(v1, 0, 1);
-        RenderUtils.addVertexLegacy(v2, 0, 0);
-        RenderUtils.addVertexLegacy(v3, 1, 0);
-        RenderUtils.addVertexLegacy(v4, 1, 1);
-        glEnd();
+        RenderUtils.addVertexWithUV(buf, v1, 0, 1);
+        RenderUtils.addVertexWithUV(buf, v2, 0, 0);
+        RenderUtils.addVertexWithUV(buf, v3, 1, 0);
+        RenderUtils.addVertexWithUV(buf, v4, 1, 1);
+        t.draw();
     }
     
     /**

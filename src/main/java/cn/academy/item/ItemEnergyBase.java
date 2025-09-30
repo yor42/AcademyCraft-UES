@@ -6,9 +6,11 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -93,15 +95,20 @@ public class ItemEnergyBase extends Item implements ImagEnergyItem {
             itemManager.charge(is, 0, true);
 
             is = new ItemStack(this);
-            itemManager.charge(is, Double.MAX_VALUE, true);
+            itemManager.charge(is, this.getMaxEnergy(), true);
             items.add(is);
         }
     }
 
+    @Nullable
+    @Override
+    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable NBTTagCompound nbt) {
+        return super.initCapabilities(stack, nbt);
+    }
+
     @Override
     @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, @Nullable World world,
-                               List<String> tooltip, ITooltipFlag flag) {
+    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         tooltip.add(itemManager.getDescription(stack));
     }
 
