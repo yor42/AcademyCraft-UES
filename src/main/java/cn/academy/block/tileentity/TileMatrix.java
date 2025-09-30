@@ -12,20 +12,19 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
+import javax.annotation.Nullable;
 
 /**
  * @author WeAthFolD
  */
 @RegTileEntity
 public class TileMatrix extends TileInventory implements IWirelessMatrix, IMultiTile, ITickable {
-    
-//    @RegTileEntity.Render
-//    @SideOnly(Side.CLIENT)
-//    public static RenderMatrix renderer;
     
     // Client-only for display
     public int plateCount;
@@ -75,6 +74,27 @@ public class TileMatrix extends TileInventory implements IWirelessMatrix, IMulti
     }
 
     @Override
+    public NBTTagCompound getUpdateTag() {
+        NBTTagCompound compound = super.getUpdateTag();
+        compound.setInteger("platecount", this.getPlateCount());
+        compound.setString("placername", this.getPlacerName());
+        return compound;
+    }
+
+    @Override
+    public void handleUpdateTag(NBTTagCompound tag) {
+        super.handleUpdateTag(tag);
+        this.plateCount = tag.getInteger("platecount");
+        this.placerName = tag.getString("placername");
+    }
+
+    @Nullable
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return super.getUpdatePacket();
+    }
+
+    @Override
     public InfoBlockMulti getBlockInfo() {
         return info;
     }
@@ -88,7 +108,6 @@ public class TileMatrix extends TileInventory implements IWirelessMatrix, IMulti
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
         info = new InfoBlockMulti(this, nbt);
-
         placerName = nbt.getString("placer");
     }
     
@@ -155,7 +174,7 @@ public class TileMatrix extends TileInventory implements IWirelessMatrix, IMulti
         return getCoreLevel() > 0 && getPlateCount() == 3;
     }
     
-    private void sync() {
+    public void sync() {
         NetworkMessage.sendToAllAround(
                 TargetPoints.convert(this, 25),
                 this, "sync", getPlateCount(), placerName);
@@ -163,7 +182,7 @@ public class TileMatrix extends TileInventory implements IWirelessMatrix, IMulti
 
     @NetworkMessage.Listener(channel="sync", side=Side.CLIENT)
     private void hSync(int plateCount2, String placerName2) {
-        plateCount = plateCount2;
-        placerName = placerName2;
+        this.plateCount = plateCount2;
+        this.placerName = placerName2;
     }
 }

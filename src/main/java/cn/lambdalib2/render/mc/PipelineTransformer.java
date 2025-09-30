@@ -23,7 +23,7 @@ public class PipelineTransformer implements IClassTransformer {
         return bytes;
     }
 
-    private class EntityRendererVisitor extends ClassVisitor {
+    private static class EntityRendererVisitor extends ClassVisitor {
 
         public EntityRendererVisitor(ClassVisitor cv) {
             super(Opcodes.ASM5, cv);

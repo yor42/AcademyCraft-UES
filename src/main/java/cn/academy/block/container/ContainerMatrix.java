@@ -36,28 +36,45 @@ public class ContainerMatrix extends TechUIContainer<TileMatrix> {
     
     public static class SlotCore extends Slot {
 
-        public SlotCore(IInventory inv, int slot, int x, int y) {
+        private final TileMatrix TE;
+
+        public SlotCore(TileMatrix inv, int slot, int x, int y) {
             super(inv, slot, x, y);
+            this.TE = inv;
         }
         
         @Override
         public boolean isItemValid(ItemStack stack) {
             return !stack.isEmpty() && stack.getItem() == ACItems.mat_core;
         }
+
+        @Override
+        public void onSlotChanged() {
+            super.onSlotChanged();
+            TE.sync();
+        }
         
     }
     
     public static class SlotPlate extends Slot {
 
-        public SlotPlate(IInventory inv, int slot, int x, int y) {
+        private final TileMatrix TE;
+
+        public SlotPlate(TileMatrix inv, int slot, int x, int y) {
             super(inv, slot, x, y);
+            this.TE = inv;
         }
-        
+
         @Override
         public boolean isItemValid(ItemStack stack) {
             return !stack.isEmpty() && stack.getItem() == ACItems.constraint_plate;
         }
-        
+
+        @Override
+        public void onSlotChanged() {
+            super.onSlotChanged();
+            TE.sync();
+        }
     }
 
 }

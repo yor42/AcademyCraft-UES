@@ -1,6 +1,7 @@
 package cn.lambdalib2.render.obj;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -20,7 +21,7 @@ import java.util.function.Function;
 public class ObjModel {
 
     public final List<Vertex> vertices = new ArrayList<>();
-    public final Multimap<String, Face> faces = HashMultimap.create();
+    public final Multimap<String, Face> faces = LinkedHashMultimap.create();
     public FloatBuffer vertexBuffer;
 
     public static class Vertex {

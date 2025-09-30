@@ -37,65 +37,61 @@ public class ObjParser {
         // Use a LinkedHashMap to preserve insertion order for groups
         Map<String, List<ObjFace>> faces = new LinkedHashMap<>();
 
-        BufferedReader rdr = new BufferedReader(rdr0);
+        try (BufferedReader rdr = new BufferedReader(rdr0)) {
+            try {
+                String currentGroup = "Default";
+                faces.put(currentGroup, new ArrayList<>());
 
-        try {
-            String currentGroup = "Default";
-            faces.put(currentGroup, new ArrayList<>());
+                String ln;
+                while ((ln = rdr.readLine()) != null) {
+                    ln = ln.trim();
+                    if (ln.isEmpty() || ln.startsWith("#")) {
+                        continue;
+                    }
 
-            String ln;
-            while ((ln = rdr.readLine()) != null) {
-                ln = ln.trim();
-                if (ln.isEmpty() || ln.startsWith("#")) {
-                    continue;
+                    String[] parts = ln.split("\\s+");
+                    switch (parts[0]) {
+                        case "v":
+                            vs.add(new Vector3f(Float.parseFloat(parts[1]), Float.parseFloat(parts[2]), Float.parseFloat(parts[3])));
+                            break;
+                        case "vt":
+                            vts.add(new Vector2f(Float.parseFloat(parts[1]), Float.parseFloat(parts[2])));
+                            break;
+                        case "g":
+                            currentGroup = parts[1];
+                            if (!faces.containsKey(currentGroup)) {
+                                faces.put(currentGroup, new ArrayList<>());
+                            }
+                            break;
+                        case "f":
+                            int[] v1 = parseFaceVertex(parts[1]);
+                            int[] v2 = parseFaceVertex(parts[2]);
+                            int[] v3 = parseFaceVertex(parts[3]);
+
+                            List<ObjFace> groupFaces = faces.get(currentGroup);
+                            if (parts.length == 5) { // Quad
+                                int[] v4 = parseFaceVertex(parts[4]);
+                                groupFaces.add(new ObjFace(v1, v2, v3));
+                                groupFaces.add(new ObjFace(v1, v3, v4));
+                            } else { // Triangle
+                                groupFaces.add(new ObjFace(v1, v2, v3));
+                            }
+                            break;
+                        case "usemtl":
+                        case "mtllib":
+                        case "vn":
+                        case "s":
+                            break;
+                        default:
+                            Debug.log("ObjParser: Unknown token '" + parts[0] + "'");
+                            break;
+                    }
                 }
-
-                String[] parts = ln.split("\\s+");
-                switch (parts[0]) {
-                    case "v":
-                        vs.add(new Vector3f(Float.parseFloat(parts[1]), Float.parseFloat(parts[2]), Float.parseFloat(parts[3])));
-                        break;
-                    case "vt":
-                        vts.add(new Vector2f(Float.parseFloat(parts[1]), Float.parseFloat(parts[2])));
-                        break;
-                    case "g":
-                        currentGroup = parts[1];
-                        if (!faces.containsKey(currentGroup)) {
-                            faces.put(currentGroup, new ArrayList<>());
-                        }
-                        break;
-                    case "f":
-                        int[] v1 = parseFaceVertex(parts[1]);
-                        int[] v2 = parseFaceVertex(parts[2]);
-                        int[] v3 = parseFaceVertex(parts[3]);
-
-                        List<ObjFace> groupFaces = faces.get(currentGroup);
-                        if (parts.length == 5) { // Quad
-                            int[] v4 = parseFaceVertex(parts[4]);
-                            groupFaces.add(new ObjFace(v1, v2, v3));
-                            groupFaces.add(new ObjFace(v1, v3, v4));
-                        } else { // Triangle
-                            groupFaces.add(new ObjFace(v1, v2, v3));
-                        }
-                        break;
-                    case "usemtl":
-                    case "mtllib":
-                    case "vn":
-                    case "s":
-                        break;
-                    default:
-                        Debug.log("ObjParser: Unknown token '" + parts[0] + "'");
-                        break;
-                }
+            } catch (IOException ex) {
+                Throwables.propagate(ex);
             }
         } catch (IOException ex) {
-            Throwables.propagate(ex);
-        } finally {
-            try {
-                rdr.close();
-            } catch (IOException ex) {
-                // Ignore
-            }
+            // Ignore
         }
 
         ObjModel ret = new ObjModel();
