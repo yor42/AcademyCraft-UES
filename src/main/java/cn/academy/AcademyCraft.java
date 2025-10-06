@@ -13,6 +13,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -31,6 +32,7 @@ import java.util.Map.Entry;
 
 import static cn.academy.AcademyCraft.MODID;
 import static cn.academy.AcademyCraft.NAME;
+import static cn.academy.util.ResourcepackUtil.generateTexturePack;
 
 /**
  * Academy Craft Mod Main Class
@@ -87,6 +89,9 @@ public class AcademyCraft {
     public void init(FMLInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
         ACOreDict.InitOredicts();
+        if(FMLCommonHandler.instance().getSide() == Side.CLIENT){
+            generateTexturePack();
+        }
     }
 
     @EventHandler
