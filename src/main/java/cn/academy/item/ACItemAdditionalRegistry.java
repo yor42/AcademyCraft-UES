@@ -43,13 +43,14 @@ public class ACItemAdditionalRegistry {
         }
     }
     private static final ACItemAdditionalRegistry INSTANCE = new ACItemAdditionalRegistry();
-    private static final ResourceLocation[] DEFAULT_APPEARANCE = { LootTableList.CHESTS_ABANDONED_MINESHAFT,
+    private static final ResourceLocation[] DEFAULT_APPEARANCE = {
+            LootTableList.CHESTS_ABANDONED_MINESHAFT,
             LootTableList.CHESTS_DESERT_PYRAMID,
             LootTableList.CHESTS_JUNGLE_TEMPLE,
             LootTableList.CHESTS_STRONGHOLD_LIBRARY,
             LootTableList.CHESTS_SIMPLE_DUNGEON };
 
-    public static final LootCondition DEFAULT_CONDS[] = new LootCondition[0];
+    public static final LootCondition[] DEFAULT_CONDS = new LootCondition[0];
 
     private static LootPool pool;
 
@@ -68,7 +69,7 @@ public class ACItemAdditionalRegistry {
     };
         ACLootItem itemFactor = new ACLootItem("induction_factor", ACItems.induction_factor, func, 10, 1);
         ACLootItem itemEmpty = ACLootItem.newEmpty(90,1);
-        addLoots("name", 4, 4, itemFactor, itemEmpty);
+        addLoots("induction_factor", 1, 1, itemFactor, itemEmpty);
 
         LootFunction funcMedia = new LootFunction(DEFAULT_CONDS) {
             @Override

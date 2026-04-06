@@ -39,9 +39,11 @@ public class EntityMdRaySmall extends EntityRayBase {
     @Override
     public void onUpdate() {
         super.onUpdate();
+        Vec3d startPos = new Vec3d(posX, posY, posZ);
+        Vec3d direction = VecUtils.multiply(getLookVec(), RandUtils.ranged(0, 10));
         Particle p = MdParticleFactory.INSTANCE.next(world,
 //            new Motion3D(this, true).move(RandUtils.ranged(0, 10)).getPosVec(),
-                VecUtils.lookingPos(this, RandUtils.ranged(0, 10)),
+                VecUtils.add(startPos, direction),
             new Vec3d(RandUtils.ranged(-.015, .015), RandUtils.ranged(-.015, .015), RandUtils.ranged(-.015, .015)));
         world.spawnEntity(p);
     }

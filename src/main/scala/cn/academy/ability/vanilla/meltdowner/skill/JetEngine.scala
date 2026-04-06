@@ -103,6 +103,7 @@ class JEContext(p: EntityPlayer) extends Context(p, JetEngine) {
         new Vec3d(player.posX, player.posY, player.posZ), EntitySelectors.exclude(player).and(EntitySelectors.living))
       if(player.getRidingEntity!=null)player.dismountRidingEntity()
       if (pos != null && pos.entityHit != null) MDDamageHelper.attack(ctx, pos.entityHit, lerpf(7, 20, exp))
+      player.fallDistance = 0.0f
     }
   }
 

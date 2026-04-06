@@ -98,20 +98,18 @@ class GroundshockContext(p: EntityPlayer) extends Context(p, Groundshock) with I
         val block = state.getBlock
 
         if (ctx.canBreakBlock(world, x, y, z)) {
-          block.getBlockHardness(state,world,blockPos) match {
-            case hardnessEnergy if hardnessEnergy >= 0 =>
-              if (energy >= hardnessEnergy && block != Blocks.FARMLAND && !block.getMaterial(state).isLiquid) {
-                energy -= hardnessEnergy
+          val hardnessEnergy = state.getBlockHardness(world, blockPos)
+          if (hardnessEnergy >= 0) {
+            val isLiquid = state.getMaterial.isLiquid
+            if (energy >= hardnessEnergy && block != Blocks.FARMLAND && !isLiquid) {
+              energy -= hardnessEnergy
 
-                if (drop && RandUtils.nextFloat() < dropRate) {
-                  block.dropBlockAsItemWithChance(world, blockPos, state, 1.0f, 0)
-                }
-
-                world.setBlockToAir(blockPos)
-                world.playSound(x + 0.5, y + 0.5, z + 0.5, SoundEvents.BLOCK_ANVIL_DESTROY, SoundCategory.AMBIENT, .5f, 1f,false)
+              if (drop && RandUtils.nextFloat() < dropRate) {
+                block.dropBlockAsItemWithChance(world, blockPos, state, 1.0f, 0)
                 //TODO This method seems to be empty.
               }
-            case _ =>
+              world.setBlockToAir(blockPos)
+              world.playSound(x + 0.5, y + 0.5, z + 0.5, SoundEvents.BLOCK_ANVIL_DESTROY, SoundCategory.AMBIENT, .5f, 1f,false)
           }
         }
       }

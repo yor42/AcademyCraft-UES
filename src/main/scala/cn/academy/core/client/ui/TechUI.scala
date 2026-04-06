@@ -635,7 +635,7 @@ object WirelessPage {
           })
           val avail = data.avail
             .map(matrix => (matrix, matrix.tile(world)))
-            .map {
+            .collect {
               case (matrix, Some(tile)) =>
                 new AvailTarget {
                   override def connect(pass: String): Unit = {
