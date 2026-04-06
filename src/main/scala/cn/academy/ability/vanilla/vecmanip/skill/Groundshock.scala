@@ -1,21 +1,21 @@
 package cn.academy.ability.vanilla.vecmanip.skill
 
 import cn.academy.ability.Skill
-import cn.academy.ability.context.{DelegateState, _}
+import cn.academy.ability.context._
 import cn.academy.ability.vanilla.generic.client.effect.SmokeEffect
 import cn.academy.ability.vanilla.util.HandlerLifePeroidEvent
 import cn.academy.client.sound.ACSounds
 import cn.academy.util.Plotter
 import cn.lambdalib2.s11n.network.NetworkMessage.Listener
-import cn.lambdalib2.util.{EntitySelectors, RandUtils, VecUtils, WorldUtils}
+import cn.lambdalib2.util.{EntitySelectors, RandUtils, WorldUtils}
 import net.minecraft.block.Block
 import net.minecraft.client.Minecraft
 import net.minecraft.client.particle.ParticleDigging
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.{Blocks, SoundEvents}
-import net.minecraft.util.{EnumFacing, EnumParticleTypes, SoundCategory}
 import net.minecraft.util.math.{AxisAlignedBB, BlockPos, Vec3d}
+import net.minecraft.util.{EnumFacing, EnumParticleTypes, SoundCategory}
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 
@@ -32,16 +32,20 @@ private object GroundshockContext {
 
 }
 
-import GroundshockContext._
-import collection.mutable
+import cn.academy.ability.vanilla.vecmanip.skill.GroundshockContext._
+
+import scala.collection.mutable
 
 class GroundshockContext(p: EntityPlayer) extends Context(p, Groundshock) with IConsumptionProvider with IStateProvider {
+
   import cn.academy.ability.api.AbilityAPIExt._
-  import scala.collection.JavaConversions._
   import cn.lambdalib2.util.MathUtils._
+
+  import scala.collection.JavaConversions._
+
   var localTick = 0
 
-  @Listener(channel=MSG_TICK, side=Array(Side.CLIENT))
+  @Listener(channel = MSG_TICK, side = Array(Side.CLIENT))
   def l_tick() = {
     localTick += 1
 
@@ -55,7 +59,7 @@ class GroundshockContext(p: EntityPlayer) extends Context(p, Groundshock) with I
     player.rotationPitch -= pitchDelta * 0.2f
   }
 
-  @Listener(channel=MSG_KEYUP, side=Array(Side.CLIENT))
+  @Listener(channel = MSG_KEYUP, side = Array(Side.CLIENT))
   def l_keyUp() = {
     if (localTick >= 5) {
       sendToServer(MSG_PERFORM)
@@ -64,17 +68,17 @@ class GroundshockContext(p: EntityPlayer) extends Context(p, Groundshock) with I
     }
   }
 
-  @Listener(channel=MSG_KEYABORT, side=Array(Side.CLIENT))
+  @Listener(channel = MSG_KEYABORT, side = Array(Side.CLIENT))
   def l_keyAbort() = {
     terminate()
   }
 
-  @Listener(channel=MSG_PERFORM, side=Array(Side.SERVER))
+  @Listener(channel = MSG_PERFORM, side = Array(Side.SERVER))
   def s_perform() = {
     import cn.lambdalib2.util.VecUtils._
     if (player.onGround && consume()) {
       val planeLook = player.getLookVec.normalize()
-      
+
       val plotter = new Plotter(Math.floor(player.posX).toInt, Math.floor(player.posY).toInt - 1,
         Math.floor(player.posZ).toInt, planeLook.x, 0, planeLook.z)
 
@@ -82,7 +86,7 @@ class GroundshockContext(p: EntityPlayer) extends Context(p, Groundshock) with I
 
       var energy = initEnergy
       val dejavu_blocks = mutable.Set[BlockPos]()
-      val dejavu_ent    = mutable.Set[Entity]()
+      val dejavu_ent = mutable.Set[Entity]()
 
       val rot = copy(planeLook)
       rot.rotateYaw(90)
@@ -93,7 +97,7 @@ class GroundshockContext(p: EntityPlayer) extends Context(p, Groundshock) with I
       val selector = EntitySelectors.living().and(EntitySelectors.exclude(player))
 
       def breakWithForce(x: Int, y: Int, z: Int, drop: Boolean) = {
-        val blockPos = new BlockPos(x,y,z)
+        val blockPos = new BlockPos(x, y, z)
         val state = world.getBlockState(blockPos)
         val block = state.getBlock
 
@@ -109,7 +113,8 @@ class GroundshockContext(p: EntityPlayer) extends Context(p, Groundshock) with I
                 //TODO This method seems to be empty.
               }
               world.setBlockToAir(blockPos)
-              world.playSound(x + 0.5, y + 0.5, z + 0.5, SoundEvents.BLOCK_ANVIL_DESTROY, SoundCategory.AMBIENT, .5f, 1f,false)
+              world.playSound(x + 0.5, y + 0.5, z + 0.5, SoundEvents.BLOCK_ANVIL_DESTROY, SoundCategory.AMBIENT, .5f, 1f, false)
+            }
           }
         }
       }
@@ -147,7 +152,7 @@ class GroundshockContext(p: EntityPlayer) extends Context(p, Groundshock) with I
                 breakWithForce(x, y, z, drop = false)
               }
 
-              val aabb = new AxisAlignedBB(pos.getX-0.2, pos.getY-0.2, pos.getZ-0.2, pos.getX+1.4, pos.getY+2.2, pos.getZ+1.4)
+              val aabb = new AxisAlignedBB(pos.getX - 0.2, pos.getY - 0.2, pos.getZ - 0.2, pos.getX + 1.4, pos.getY + 2.2, pos.getZ + 1.4)
               val entities = WorldUtils.getEntities(world, aabb, selector)
               entities.foreach(entity => {
                 if (!dejavu_ent.contains(entity)) {
@@ -163,7 +168,8 @@ class GroundshockContext(p: EntityPlayer) extends Context(p, Groundshock) with I
           }
 
           (1 to 3).foreach(d => breakWithForce(x, y + d, z, false))
-        }}
+        }
+        }
       }
 
       energy = Double.MaxValue
@@ -221,13 +227,13 @@ class GroundshockContext(p: EntityPlayer) extends Context(p, Groundshock) with I
 @RegClientContext(classOf[GroundshockContext])
 class GroundshockContextC(par: GroundshockContext) extends ClientContext(par) {
 
-  @Listener(channel=MSG_PERFORM, side=Array(Side.CLIENT))
+  @Listener(channel = MSG_PERFORM, side = Array(Side.CLIENT))
   def c_perform(affectedBlocks: Array[Array[Int]]) = {
     if (isLocal) {
       par.consume()
 
       // Starts a coroutine that make player's look direction slash down.
-      MinecraftForge.EVENT_BUS.register(new HandlerLifePeroidEvent(4){
+      MinecraftForge.EVENT_BUS.register(new HandlerLifePeroidEvent(4) {
         override def onTick() = {
           player.rotationPitch += 3.4f
           true
@@ -245,6 +251,7 @@ class GroundshockContextC(par: GroundshockContext) extends ClientContext(par) {
       import cn.lambdalib2.util.RandUtils._
       for (i <- 0 until rangei(4, 8)) {
         def randvel() = ranged(-0.2, 0.2)
+
         val is = world.getBlockState(pt)
 
         val particleManager = Minecraft.getMinecraft.effectRenderer
