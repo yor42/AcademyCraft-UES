@@ -52,7 +52,7 @@ public class ACItemAdditionalRegistry {
 
     public static final LootCondition[] DEFAULT_CONDS = new LootCondition[0];
 
-    private static LootPool pool;
+    private static ArrayList<LootPool> pools = new ArrayList<>();
 
     @StateEventCallback
     public static void preInit(FMLPreInitializationEvent evt)
@@ -101,7 +101,7 @@ public class ACItemAdditionalRegistry {
             _entries.add(entry);
         }
         LootEntry[] entries1 = new LootEntry[_entries.size()];
-        pool = new LootPool( _entries.toArray(entries1), DEFAULT_CONDS, new RandomValueRange(minValue, maxValue), new RandomValueRange(0,0), "academy:"+poolName);
+        pools.add(new LootPool( _entries.toArray(entries1), DEFAULT_CONDS, new RandomValueRange(minValue, maxValue), new RandomValueRange(0,0), "academy:"+poolName));
     }
 
     @SubscribeEvent
@@ -109,7 +109,9 @@ public class ACItemAdditionalRegistry {
         for(ResourceLocation loc:DEFAULT_APPEARANCE)
         {
             if (evt.getName().equals(loc)) {
-                evt.getTable().addPool(pool);
+                for(LootPool pool:pools){
+                    evt.getTable().addPool(pool);
+                }
                 break;
             }
         }
